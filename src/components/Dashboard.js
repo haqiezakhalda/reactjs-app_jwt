@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Container, Button, Table } from "react-bootstrap";
+import { Container, Button, ButtonGroup, Table } from "react-bootstrap";
 import axios from 'axios';
 import jwt_decode from "jwt-decode";
 import { useNavigate } from 'react-router-dom';
@@ -72,6 +72,28 @@ const Dashboard = () => {
     }
   }
 
+  const DeleteData = async (e) => {
+    e.preventDefault();
+    const index = e.currentTarget.getAttribute('index');
+    console.log("Ini index data:", users[index]);
+    try {
+      await axiosJWT.delete(`http://localhost:5000/users/${users[index].id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      if (users[index].name === name) {
+        alert('User login telah terhapus, Silahkan login dengan User lain');
+        await axios.delete('http://localhost:5000/logout');
+        navigate({ pathname: "/" });
+      }
+    } catch (error) {
+      if (error.response) {
+        setMsg(error.response.data.msg);
+      }
+    }
+  }
+
   return (
     <div className="mt-5">
       <Container>
@@ -96,7 +118,10 @@ const Dashboard = () => {
                 <td>{user.email}</td>
                 <td>{user.dateOfBirth}</td>
                 <td>
-                  <Button variant='warning' index={index} onClick={EditData}>Edit</Button>
+                  <ButtonGroup aria-label="Basic example">
+                    <Button variant="warning" index={index} onClick={EditData}>Edit</Button>
+                    <Button variant="danger" index={index} onClick={DeleteData}>Delete</Button>
+                  </ButtonGroup>
                 </td>
               </tr>
             ))}
